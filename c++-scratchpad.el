@@ -18,8 +18,7 @@
 This variable is set locally in scratchpad buffers.")
 
 (defun c++-scratchpad--tool-exists-p (name)
-  (with-temp-buffer
-    (eq 0 (call-process "/bin/sh" nil nil nil "-c" (concat "which " name)))))
+  (eq 0 (call-process "/bin/sh" nil nil nil "-c" (concat "which " name))))
 
 (defun c++-scratchpad-compile ()
   "Compile using Meson or Cmake build systems.
@@ -59,6 +58,4 @@ Meson has priority but it can be redefined by rearranging
       (search-forward-regexp "main(.*)")
       (search-forward "{\n")
       (c-indent-line)
-      (let ((before-save-hook nil))
-	(save-buffer))
       (setq-local c++-scratchpad-current-path current-path))))
