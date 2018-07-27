@@ -17,11 +17,6 @@
 
 This variable is set locally in scratchpad buffers.")
 
-(setq c++-scratchpad-scratch-path
-      (concat (temporary-file-directory)
-	      (string-trim (shell-command-to-string
-			    "mktemp -du emacs-cpp-scratch-XXX"))))
-
 (defun c++-scratchpad--tool-exists-p (name)
   (with-temp-buffer
     (eq 0 (call-process "/bin/sh" nil nil nil "-c" (concat "which " name)))))
@@ -67,9 +62,3 @@ Meson has priority but it can be redefined by rearranging
       (let ((before-save-hook nil))
 	(save-buffer))
       (setq-local c++-scratchpad-current-path current-path))))
-
-;; (shell-process-cd (concat c++-scratchpad-current-path "builddir"))
-;; (with-temp-buffer
-;;   (unless (eq 0 (shell-command "meson builddir" (current-buffer)))
-;;     (throw 'err "[c++-scratchpad] Meson isn't installed?")))
-;; (shell-command "ninja")
