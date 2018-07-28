@@ -108,6 +108,7 @@ version. Regenerating files...")))))
 			      "/compile_commands.json")
 		      t))
 
+;; FIXME: This currently doesn't work.
 (defun c++-scratchpad-compile ()
   "Compile using Meson or Cmake build systems.
 
