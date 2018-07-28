@@ -111,7 +111,7 @@ Meson has priority but it can be redefined by rearranging
 
 (defun c++-scratchpad--generic-get-version (tool)
   (let ((string (shell-command-to-string (concat tool " --version"))))
-    (string-match "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" string)
+    (string-match "[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+" string)
     (match-string 0 string)))
 
 ;; FIXME: This evaluates slowly so it will hang emacs for a moment.
