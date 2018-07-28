@@ -9,10 +9,13 @@
 
 (defvar c++-scratchpad-build-system-list
   '((:name "meson"
+	   :builddir-gen-command "meson builddir"
 	   :compile-command "ninja"
 	   :compile-function c++-scratchpad--meson-compile
 	   :get-version-fun c++-scratchpad--meson-get-version)
     (:name "cmake"
+	   :builddir-gen-command "mkdir builddir && cd builddir && \
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 	   :compile-command "make"
 	   :compile-function c++-scratchpad--cmake-compile
 	   :get-version-fun c++-scratchpad--cmake-get-version))
@@ -93,7 +96,17 @@ version. Regenerating files...")))))
 
 (defun c++-scratchpad--regenerate-build-files ()
   "Regenerate files used to build a scratchpad and tool-versions file."
-  (message "Regenerate build files."))
+  (delete-directory (concat c++-scratchpad-template-path "/builddir") t)
+  ;; call the build system to create builddir
+  (call-process "/bin/sh" nil nil nil "-c"
+		(format "cd %s && %s"
+			c++-scratchpad-template-path
+			(c++-scratchpad--get-tool-prop
+			 c++-scratchpad-build-system :builddir-gen-command)))
+  (make-symbolic-link "builddir/compile_commands.json"
+		      (concat c++-scratchpad-template-path
+			      "/compile_commands.json")
+		      t))
 
 (defun c++-scratchpad-compile ()
   "Compile using Meson or Cmake build systems.
