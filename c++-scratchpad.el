@@ -128,9 +128,8 @@ Meson has priority but it can be redefined by rearranging
     (string-match "[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+" string)
     (match-string 0 string)))
 
-;; FIXME: This evaluates slowly so it will hang emacs for a moment.
+;; NOTE: This evaluates slowly so it will hang emacs for a moment.
 ;;        For me it's about 0.21s compared to cmake's 0.012.
-;;
 (defun c++-scratchpad--meson-get-version ()
   (c++-scratchpad--generic-get-version "meson"))
 
