@@ -109,14 +109,22 @@ Meson has priority but it can be redefined by rearranging
 	   do (when (c++-scratchpad--tool-exists-p tool)
       		(throw 'found function))))))
 
+(defun c++-scratchpad--generic-get-version (tool)
+  (let ((string (shell-command-to-string (concat tool " --version"))))
+    (string-match "[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+" string)
+    (match-string 0 string)))
+
+;; FIXME: This evaluates slowly so it will hang emacs for a moment.
+;;        For me it's about 0.21s compared to cmake's 0.012.
+;;
 (defun c++-scratchpad--meson-get-version ()
-  (message "0.47.1"))
+  (c++-scratchpad--generic-get-version "meson"))
 
 (defun c++-scratchpad--meson-compile ()
   (message "meson!!!"))
 
 (defun c++-scratchpad--cmake-get-version ()
-  (message "3.11.4"))
+  (c++-scratchpad--generic-get-version "cmake"))
 
 (defun c++-scratchpad--cmake-compile ()
   (message "cmake!!!"))
