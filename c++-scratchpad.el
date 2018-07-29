@@ -1,8 +1,25 @@
 ;; -*- lexical-binding: t -*-
 
-;; TODO: This has to be a minor mode with a keymap. Also when exiting minor
-;;       mode, it should delete the temp directory.
-;;       Keymap: <C-c C-c> for compile and run, <C-c C-q> for exit scratch
+(defvar c++-scratchpad-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c")
+      #'c++-scratchpad-compile-and-run)
+    (define-key map (kbd "C-c C-q")
+      #'c++-scratchpad-exit)
+    map)
+  "A key map for `c++-scratchpad-mode'.")
+
+(define-minor-mode
+  c++-scratchpad-mode
+  "A minor mode used inside of c++-scratchpad buffer. It's not designed to be
+used anywhere else.
+
+The following keys are available in `c++-scratchpad-mode':
+
+\\{c++-scratchpad-mode-map}"
+  nil
+  " cpp-s"
+  'c++-scratchpad-mode-map)
 
 (defvar c++-scratchpad-template-path "~/.emacs.d/cpp-scratch-template"
   "Path to a scratchpad template directory.")
@@ -122,6 +139,9 @@ Meson has priority but it can be redefined by rearranging
      (loop for (tool . function) in c++-scratchpad-compilation-alist
 	   do (when (c++-scratchpad--tool-exists-p tool)
       		(throw 'found function))))))
+(defun c++-scratchpad-compile-and-run ()
+  (interactive)
+  (message "Compile and run."))
 
 (defun c++-scratchpad--generic-get-version (tool)
   (let ((string (shell-command-to-string (concat tool " --version"))))
@@ -163,3 +183,6 @@ Meson has priority but it can be redefined by rearranging
       (search-forward "{\n")
       (c-indent-line)
       (setq-local c++-scratchpad-current-path current-path))))
+
+(defun c++-scratchpad-exit ()
+  (message "Exit!"))
