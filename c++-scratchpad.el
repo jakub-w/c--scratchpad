@@ -142,7 +142,9 @@ Meson has priority but it can be redefined by rearranging
 (defun c++-scratchpad--cmake-compile ()
   (message "cmake!!!"))
 
-;; Maybe we sould put the directory inside /tmp/emacs<uid>/
+;; Maybe we should put the directory inside /tmp/emacs<uid>/
+;; NOTE: Copying template directory may be unnecessary. It could be possible
+;;       to just create symlinks to all needed files and directories.
 (defun c++-scratchpad-new ()
   "Create a new, clean C++ scratchpad and pop to it."
   (interactive)
