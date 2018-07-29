@@ -133,15 +133,15 @@ Meson has priority but it can be redefined by rearranging
 `c++-scratchpad-build-system-list'."
   (interactive)
   ;; TODO: check if in c++-scratchpad-mode, if not, leave
-  ;; (save-buffer)
-  (funcall
-   (catch 'found   ; returns nil if not found
-     (loop for (tool . function) in c++-scratchpad-compilation-alist
-	   do (when (c++-scratchpad--tool-exists-p tool)
-      		(throw 'found function))))))
+  (save-buffer)
+  (funcall (c++-scratchpad--get-tool-prop c++-scratchpad-build-system
+					  :compile-function)))
+
 (defun c++-scratchpad-compile-and-run ()
+  "Compile current scratchpad and run it in the shell."
   (interactive)
-  (message "Compile and run."))
+  (c++-scratchpad-compile)
+  (message "Run."))
 
 (defun c++-scratchpad--generic-get-version (tool)
   (let ((string (shell-command-to-string (concat tool " --version"))))
@@ -179,10 +179,17 @@ Meson has priority but it can be redefined by rearranging
 		      current-path)
       (find-file-other-window (concat current-path
 				      "/main.cpp"))
+      (rename-buffer "*c++-scratchpad*")
       (search-forward-regexp "main(.*)")
       (search-forward "{\n")
       (c-indent-line)
-      (setq-local c++-scratchpad-current-path current-path))))
+      (setq-local c++-scratchpad-current-path current-path)
+      (c++-scratchpad-mode 1))))
 
 (defun c++-scratchpad-exit ()
-  (message "Exit!"))
+  "Exit and delete current C++ scratchpad."
+  (interactive)
+  (delete-directory c++-scratchpad-current-path t)
+  (set-buffer-modified-p nil)
+  (kill-current-buffer)
+  (message "Exit."))
