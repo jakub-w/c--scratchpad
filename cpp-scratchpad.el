@@ -1,4 +1,35 @@
-;; -*- lexical-binding: t -*-
+;;; cpp-scratchpad.el -- Scratchpad for C++  -*- lexical-binding: t -*-
+
+;; Copyright (C) 2018 Jakub Wojeciech
+
+;; Author: Jakub Wojciech <jakub-w@riseup.net>
+;; Maintainer:
+;; Created:
+;; Version:
+;; Keywords: c tools
+;; Package-Requires:
+;; URL: https://github.com/jakub-w/cpp-scratchpad
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, see
+;; <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; The `cpp-scratchpad' package provides simple and quick method to open
+;; a scratchpad for testing code or prototyping in C++.
+
+;;; Code:
 
 (defvar cpp-scratchpad-mode-map
   (let ((map (make-sparse-keymap)))
@@ -193,3 +224,5 @@ Meson has priority but it can be redefined by rearranging
   (set-buffer-modified-p nil)
   (kill-current-buffer)
   (message "Exit."))
+
+;;; cpp-scratchpad.el ends here
