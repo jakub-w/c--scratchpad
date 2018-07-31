@@ -40,6 +40,7 @@
     map)
   "A key map for `cpp-scratchpad-mode'.")
 
+;; TODO: Add usage documentation inside this minor mode doc.
 (define-minor-mode
   cpp-scratchpad-mode
   "A minor mode used inside of cpp-scratchpad buffer. It's not designed to be
