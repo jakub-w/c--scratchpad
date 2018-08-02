@@ -34,7 +34,7 @@
 (defvar cpp-scratchpad-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c")
-      #'cpp-scratchpad-compile-and-run)
+      #'cpp-scratchpad-compile)
     (define-key map (kbd "C-c C-q")
       #'cpp-scratchpad-exit)
     map)
@@ -59,7 +59,7 @@ The following keys are available in `cpp-scratchpad-mode':
 (defvar cpp-scratchpad-build-system-list
   '((:name "meson"
 	   :builddir-gen-command "meson builddir"
-	   :compile-command "ninja"
+	   :compile-command "cd builddir && ninja"
 	   :compile-function cpp-scratchpad--meson-compile
 	   :get-version-fun cpp-scratchpad--meson-get-version)
     (:name "cmake"
@@ -103,6 +103,9 @@ found on a system. Priority can be changed by modifying said list.")
   "Path to current temporary scratchpad directory.
 
 This variable is set locally in scratchpad buffers.")
+
+(defvar cpp-scratchpad-compilation-buffer nil
+  "Buffer used as an output to compilation current scratchpad.")
 
 (defun cpp-scratchpad-template-setup ()
   "Set up template directory.
@@ -158,21 +161,35 @@ version. Regenerating files...")))))
 		      t))
 
 ;; FIXME: This currently doesn't work.
-(defun cpp-scratchpad-compile ()
+(defun cpp-scratchpad-compile (&optional dont-run)
   "Compile using Meson or Cmake build systems.
 
 Meson has priority but it can be redefined by rearranging
 `cpp-scratchpad-build-system-list'."
-  (interactive)
+  (interactive "P")
   ;; TODO: check if in cpp-scratchpad-mode, if not, leave
+  (unless (buffer-live-p cpp-scratchpad-compilation-buffer)
+    (setq-local cpp-scratchpad-compilation-buffer
+		(get-buffer-create (concat
+				    (string-trim-right (buffer-name) "*")
+				    "-result*"))))
   (save-buffer)
-  (funcall (cpp-scratchpad--get-tool-prop cpp-scratchpad-build-system
-					  :compile-function)))
+
+  ;; don't run if dont-run set or if didn't compile for some reason
+    (unless (or dont-run
+	      (not (funcall (cpp-scratchpad--get-tool-prop
+			 cpp-scratchpad-build-system
+			 :compile-function))))
+      (message "Run compiled scratchpad."))
+    (pop-to-buffer cpp-scratchpad-compilation-buffer))
 
 (defun cpp-scratchpad-compile-and-run ()
   "Compile current scratchpad and run it in the shell."
   (interactive)
-  (cpp-scratchpad-compile)
+  (save-buffer)
+
+  (funcall (cpp-scratchpad--get-tool-prop cpp-scratchpad-build-system
+					  :compile-function))
   (message "Run."))
 
 (defun cpp-scratchpad--generic-get-version (tool)
@@ -186,17 +203,31 @@ Meson has priority but it can be redefined by rearranging
   (cpp-scratchpad--generic-get-version "meson"))
 
 (defun cpp-scratchpad--meson-compile ()
-  (message "meson!!!"))
+  "Return t on success, otherwise nil."
+  (assert cpp-scratchpad-compilation-buffer)
+  (message (concat "cd " cpp-scratchpad-current-path " && "
+	   (cpp-scratchpad--get-tool-prop "meson"
+					  :compile-command)))
+  (if (eq 0 (call-process
+	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
+  	     "-c"
+  	     (concat "cd " cpp-scratchpad-current-path " && "
+  		     (cpp-scratchpad--get-tool-prop "meson"
+  						    :compile-command))))
+      t
+    nil))
 
 (defun cpp-scratchpad--cmake-get-version ()
   (cpp-scratchpad--generic-get-version "cmake"))
 
 (defun cpp-scratchpad--cmake-compile ()
+  "Return t on success, otherwise nil."
   (message "cmake!!!"))
 
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
 ;;       to just create symlinks to all needed files and directories.
+;; TODO: number the scratchpads so that you can have several open at once
 (defun cpp-scratchpad-new ()
   "Create a new, clean C++ scratchpad and pop to it."
   (interactive)
