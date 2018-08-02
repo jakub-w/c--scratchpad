@@ -83,7 +83,6 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 (defun cpp-scratchpad--get-tool-prop (tool property)
   "Get PROPERTY of TOOL from `cpp-scratchpad-build-system-list'."
   (loop for tool-props in cpp-scratchpad-build-system-list
-	do (message "tool: %s" (plist-get tool-props :name))
 	when (string-equal tool (plist-get tool-props :name))
 	return (plist-get tool-props property)))
 
