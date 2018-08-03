@@ -41,6 +41,7 @@
   "A key map for `cpp-scratchpad-mode'.")
 
 ;; TODO: Add usage documentation inside this minor mode doc.
+;; TODO: Delete scratchpad dir on buffer kill
 (define-minor-mode
   cpp-scratchpad-mode
   "A minor mode used inside of cpp-scratchpad buffer. It's not designed to be
@@ -208,6 +209,7 @@ Meson has priority but it can be redefined by rearranging
 (defun cpp-scratchpad--meson-get-version ()
   (cpp-scratchpad--generic-get-version "meson"))
 
+;; TODO: merge with cpp-scratchpad--cmake-compile
 (defun cpp-scratchpad--meson-compile ()
   "Return t on success, otherwise nil."
   (assert cpp-scratchpad-compilation-buffer)
@@ -223,6 +225,7 @@ Meson has priority but it can be redefined by rearranging
 (defun cpp-scratchpad--cmake-get-version ()
   (cpp-scratchpad--generic-get-version "cmake"))
 
+;; TODO: merge with cpp-scratchpad--meson-compile
 (defun cpp-scratchpad--cmake-compile ()
   "Return t on success, otherwise nil."
   (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
