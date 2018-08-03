@@ -61,13 +61,15 @@ The following keys are available in `cpp-scratchpad-mode':
 	   :builddir-gen-command "meson builddir"
 	   :compile-command "cd builddir && ninja"
 	   :compile-function cpp-scratchpad--meson-compile
-	   :get-version-fun cpp-scratchpad--meson-get-version)
+	   :get-version-fun cpp-scratchpad--meson-get-version
+	   :signature-file "ninja.build")
     (:name "cmake"
 	   :builddir-gen-command "mkdir builddir && cd builddir && \
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
-	   :compile-command "make"
+	   :compile-command "cd builddir && make"
 	   :compile-function cpp-scratchpad--cmake-compile
-	   :get-version-fun cpp-scratchpad--cmake-get-version))
+	   :get-version-fun cpp-scratchpad--cmake-get-version
+	   :signature-file "CMakeCache.txt"))
   "List containing build system information.
 
 :name - Name of a build system.
@@ -78,7 +80,10 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 :compile-function - Function used to compile a scratchpad.
 
 :get-version-fun - Function used to determine which version of build system is
-                   present on a system.")
+                   present on a system.
+
+:signature-file - Name of the file in build directory that is unique to the
+                  build system.")
 
 (defun cpp-scratchpad--get-tool-prop (tool property)
   "Get PROPERTY of TOOL from `cpp-scratchpad-build-system-list'."
@@ -242,6 +247,12 @@ Meson has priority but it can be redefined by rearranging
 	   (concat (temporary-file-directory)
 		   (string-trim (shell-command-to-string
 				 "mktemp -du emacs-cpp-scratch-XXX")))))
+      ;; check if build system changed and regenerate files if so
+      (unless (file-exists-p (concat cpp-scratchpad-template-path "/builddir/"
+				     (cpp-scratchpad--get-tool-prop
+				      cpp-scratchpad-build-system
+				      :signature-file)))
+	(cpp-scratchpad--regenerate-build-files))
       (copy-directory cpp-scratchpad-template-path
 		      current-path)
       (find-file-other-window (concat current-path
