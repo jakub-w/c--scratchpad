@@ -204,9 +204,6 @@ Meson has priority but it can be redefined by rearranging
 (defun cpp-scratchpad--meson-compile ()
   "Return t on success, otherwise nil."
   (assert cpp-scratchpad-compilation-buffer)
-  (message (concat "cd " cpp-scratchpad-current-path " && "
-	   (cpp-scratchpad--get-tool-prop "meson"
-					  :compile-command)))
   (if (eq 0 (call-process
 	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
   	     "-c"
