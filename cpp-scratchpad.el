@@ -218,7 +218,15 @@ Meson has priority but it can be redefined by rearranging
 
 (defun cpp-scratchpad--cmake-compile ()
   "Return t on success, otherwise nil."
-  (message "cmake!!!"))
+  (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
+  (if (eq 0 (call-process
+	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
+  	     "-c"
+  	     (concat "cd " cpp-scratchpad-current-path " && "
+  		     (cpp-scratchpad--get-tool-prop "cmake"
+  						    :compile-command))))
+      t
+    nil))
 
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
