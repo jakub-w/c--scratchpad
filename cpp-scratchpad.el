@@ -187,15 +187,6 @@ Meson has priority but it can be redefined by rearranging
       (message "Run compiled scratchpad."))
     (pop-to-buffer cpp-scratchpad-compilation-buffer))
 
-(defun cpp-scratchpad-compile-and-run ()
-  "Compile current scratchpad and run it in the shell."
-  (interactive)
-  (save-buffer)
-
-  (funcall (cpp-scratchpad--get-tool-prop cpp-scratchpad-build-system
-					  :compile-function))
-  (message "Run."))
-
 (defun cpp-scratchpad--generic-get-version (tool)
   (let ((string (shell-command-to-string (concat tool " --version"))))
     (string-match "[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+" string)
