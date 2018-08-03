@@ -166,26 +166,37 @@ version. Regenerating files...")))))
 
 ;; FIXME: This currently doesn't work.
 (defun cpp-scratchpad-compile (&optional dont-run)
-  "Compile using Meson or Cmake build systems.
+  "Compile using Meson or Cmake build systems and then execute.
+
+With a prefix argument \\[universal-argument], just compile without executing.
 
 Meson has priority but it can be redefined by rearranging
 `cpp-scratchpad-build-system-list'."
   (interactive "P")
   ;; TODO: check if in cpp-scratchpad-mode, if not, leave
-  (unless (buffer-live-p cpp-scratchpad-compilation-buffer)
-    (setq-local cpp-scratchpad-compilation-buffer
-		(get-buffer-create (concat
-				    (string-trim-right (buffer-name) "*")
-				    "-result*"))))
+  (when (buffer-live-p cpp-scratchpad-compilation-buffer)
+    (kill-buffer cpp-scratchpad-compilation-buffer))
+  (setq-local cpp-scratchpad-compilation-buffer
+	      (get-buffer-create (concat
+				  (string-trim-right (buffer-name) "*")
+				  "-result*")))
   (save-buffer)
-
   ;; don't run if dont-run set or if didn't compile for some reason
-    (unless (or dont-run
-	      (not (funcall (cpp-scratchpad--get-tool-prop
-			 cpp-scratchpad-build-system
-			 :compile-function))))
-      (message "Run compiled scratchpad."))
-    (pop-to-buffer cpp-scratchpad-compilation-buffer))
+  (if (and (not dont-run)
+	   (funcall (cpp-scratchpad--get-tool-prop
+		     cpp-scratchpad-build-system
+		     :compile-function)))
+      (with-current-buffer cpp-scratchpad-compilation-buffer
+	(progn
+	  (eshell-mode)
+	  (insert "cd builddir && ./scratchpad")
+	  (eshell-send-input)))
+    ;; TODO: set variables in compilation mode because it doesn't know
+    ;;       where to look for main.cpp file
+    ;; on compilation errors or dont-run change to compilation-mode
+    (with-current-buffer cpp-scratchpad-compilation-buffer
+      (compilation-mode)))
+  (pop-to-buffer cpp-scratchpad-compilation-buffer))
 
 (defun cpp-scratchpad--generic-get-version (tool)
   (let ((string (shell-command-to-string (concat tool " --version"))))
