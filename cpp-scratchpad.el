@@ -40,6 +40,8 @@
     map)
   "A key map for `cpp-scratchpad-mode'.")
 
+;; TODO(priority): CMake uses absolute paths so we can't just copy generated
+;;                 files. We need to call cmake inside temp directory.
 ;; TODO: Add usage documentation inside this minor mode doc.
 ;; TODO: Delete scratchpad dir on buffer kill
 (define-minor-mode
@@ -191,8 +193,6 @@ Meson has priority but it can be redefined by rearranging
 	  (eshell-mode)
 	  (insert "cd builddir && ./scratchpad")
 	  (eshell-send-input)))
-    ;; TODO: set variables in compilation mode because it doesn't know
-    ;;       where to look for main.cpp file
     ;; on compilation errors or dont-run change to compilation-mode
     (with-current-buffer cpp-scratchpad-compilation-buffer
       (compilation-mode)))
