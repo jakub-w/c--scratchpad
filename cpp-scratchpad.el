@@ -226,6 +226,13 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 (defun cpp-scratchpad--cmake-get-version ()
   (cpp-scratchpad--generic-get-version "cmake"))
 
+(defun cpp-scratchpad--build-system-matches-files-p ()
+  "Check if current build system matches files in template directory."
+  (file-exists-p (concat cpp-scratchpad-template-path "/builddir/"
+			 (cpp-scratchpad--get-tool-prop
+			  cpp-scratchpad-build-system
+			  :signature-file))))
+
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
 ;;       to just create symlinks to all needed files and directories.
@@ -241,10 +248,7 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 		   (string-trim (shell-command-to-string
 				 "mktemp -du emacs-cpp-scratch-XXX")))))
       ;; check if build system changed and regenerate files if so
-      (unless (file-exists-p (concat cpp-scratchpad-template-path "/builddir/"
-				     (cpp-scratchpad--get-tool-prop
-				      cpp-scratchpad-build-system
-				      :signature-file)))
+      (unless (cpp-scratchpad--build-system-matches-files-p)
 	(cpp-scratchpad--regenerate-build-files))
       (copy-directory cpp-scratchpad-template-path
 		      current-path)
