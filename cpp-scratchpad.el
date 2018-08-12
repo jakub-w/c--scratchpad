@@ -98,7 +98,9 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
   "Build system chosen to build a scratchpad.
 
 It defaults to whatever tool listed in `cpp-scratchpad-build-system-list' is
-found on a system. Priority can be changed by modifying said list.")
+found on a system. Priority can be changed by modifying said list.
+
+This variable is global and shouldn't be used as buffer-local.")
 
 (defvar cpp-scratchpad-current-path nil
   "Path to current temporary scratchpad directory.
