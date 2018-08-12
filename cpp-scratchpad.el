@@ -61,14 +61,12 @@ The following keys are available in `cpp-scratchpad-mode':
   '((:name "meson"
 	   :builddir-gen-command "meson builddir"
 	   :compile-command "cd builddir && ninja"
-	   :compile-function cpp-scratchpad--meson-compile
 	   :get-version-fun cpp-scratchpad--meson-get-version
 	   :signature-file "ninja.build")
     (:name "cmake"
 	   :builddir-gen-command "mkdir builddir && cd builddir && \
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 	   :compile-command "cd builddir && make"
-	   :compile-function cpp-scratchpad--cmake-compile
 	   :get-version-fun cpp-scratchpad--cmake-get-version
 	   :signature-file "CMakeCache.txt"))
   "List containing build system information.
@@ -77,8 +75,6 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 
 :compile-command - Command to call after the build system has prepared all
                    necessary files.
-
-:compile-function - Function used to compile a scratchpad.
 
 :get-version-fun - Function used to determine which version of build system is
                    present on a system.
@@ -184,9 +180,8 @@ Meson has priority but it can be redefined by rearranging
   (save-buffer)
   ;; don't run if dont-run set or if didn't compile for some reason
   (if (and (not dont-run)
-	   (funcall (cpp-scratchpad--get-tool-prop
-		     cpp-scratchpad-build-system
-		     :compile-function)))
+	   (cpp-scratchpad--build
+	    cpp-scratchpad-build-system))
       (with-current-buffer cpp-scratchpad-compilation-buffer
 	(progn
 	  (eshell-mode)
@@ -209,34 +204,25 @@ Meson has priority but it can be redefined by rearranging
 (defun cpp-scratchpad--meson-get-version ()
   (cpp-scratchpad--generic-get-version "meson"))
 
-;; TODO: merge with cpp-scratchpad--cmake-compile
-(defun cpp-scratchpad--meson-compile ()
-  "Return t on success, otherwise nil."
-  (assert cpp-scratchpad-compilation-buffer)
+(defun cpp-scratchpad--build (&optional build-system)
+  "Call a BUILD-SYSTEM to compile current scratchpad.
+
+If BUILD-SYSTEM is not specified, use `cpp-scratchpad-build-system'.
+
+Uses buffer-local `cpp-scratchpad-compilation-buffer'."
+  (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
+  (unless build-system (setq build-system cpp-scratchpad-build-system))
   (if (eq 0 (call-process
 	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
   	     "-c"
   	     (concat "cd " cpp-scratchpad-current-path " && "
-  		     (cpp-scratchpad--get-tool-prop "meson"
+  		     (cpp-scratchpad--get-tool-prop build-system
   						    :compile-command))))
       t
     nil))
 
 (defun cpp-scratchpad--cmake-get-version ()
   (cpp-scratchpad--generic-get-version "cmake"))
-
-;; TODO: merge with cpp-scratchpad--meson-compile
-(defun cpp-scratchpad--cmake-compile ()
-  "Return t on success, otherwise nil."
-  (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
-  (if (eq 0 (call-process
-	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
-  	     "-c"
-  	     (concat "cd " cpp-scratchpad-current-path " && "
-  		     (cpp-scratchpad--get-tool-prop "cmake"
-  						    :compile-command))))
-      t
-    nil))
 
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
