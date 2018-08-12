@@ -173,6 +173,8 @@ Meson has priority but it can be redefined by rearranging
 `cpp-scratchpad-build-system-list'."
   (interactive "P")
   ;; TODO: check if in cpp-scratchpad-mode, if not, leave
+  (unless (cpp-scratchpad--build-system-matches-files-p)
+    (error "Build system changed. Please, create new scratchpad."))
   (when (buffer-live-p cpp-scratchpad-compilation-buffer)
     (kill-buffer cpp-scratchpad-compilation-buffer))
   (setq-local cpp-scratchpad-compilation-buffer
