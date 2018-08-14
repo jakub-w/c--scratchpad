@@ -265,4 +265,5 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
       (cpp-scratchpad--regenerate-build-files)
       (cpp-scratchpad-mode 1))))
 
+(provide 'cpp-scratchpad)
 ;;; cpp-scratchpad.el ends here
