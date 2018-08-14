@@ -35,13 +35,10 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c")
       #'cpp-scratchpad-compile)
-    (define-key map (kbd "C-c C-q")
-      #'cpp-scratchpad-exit)
     map)
   "A key map for `cpp-scratchpad-mode'.")
 
 ;; TODO: Add usage documentation inside this minor mode doc.
-;; TODO: Delete scratchpad dir on buffer kill
 (define-minor-mode
   cpp-scratchpad-mode
   "A minor mode used inside of cpp-scratchpad buffer. It's not designed to be
@@ -53,6 +50,14 @@ The following keys are available in `cpp-scratchpad-mode':
   nil
   " cpp-s"
   'cpp-scratchpad-mode-map)
+
+;; TODO: kill also a buffer with compilation result
+(defun cpp-scratchpad-kill-buffer-function ()
+  (when (eq t cpp-scratchpad-mode)
+    (delete-directory cpp-scratchpad-current-path t)
+    (set-buffer-modified-p nil))
+  t)
+(add-hook 'kill-buffer-query-functions 'cpp-scratchpad-kill-buffer-function)
 
 (defvar cpp-scratchpad-template-path "~/.emacs.d/cpp-scratch-template"
   "Path to a scratchpad template directory.")
@@ -258,13 +263,5 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
       (setq-local cpp-scratchpad-current-path current-path)
       (cpp-scratchpad--regenerate-build-files)
       (cpp-scratchpad-mode 1))))
-
-(defun cpp-scratchpad-exit ()
-  "Exit and delete current C++ scratchpad."
-  (interactive)
-  (delete-directory cpp-scratchpad-current-path t)
-  (set-buffer-modified-p nil)
-  (kill-current-buffer)
-  (message "Exit."))
 
 ;;; cpp-scratchpad.el ends here
