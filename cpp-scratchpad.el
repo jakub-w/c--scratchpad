@@ -40,8 +40,6 @@
     map)
   "A key map for `cpp-scratchpad-mode'.")
 
-;; TODO(priority): CMake uses absolute paths so we can't just copy generated
-;;                 files. We need to call cmake inside temp directory.
 ;; TODO: Add usage documentation inside this minor mode doc.
 ;; TODO: Delete scratchpad dir on buffer kill
 (define-minor-mode
@@ -118,11 +116,7 @@ This variable is set locally in scratchpad buffers.")
 Check if there is no template set up or if build systems or compilers have
 changed and update the template if necessary."
   (interactive)
-  ;; check if build system versions are ok
-  (let ((result (cpp-scratchpad--check-tool-versions)))
-    (if result (progn (message result)
-		      (cpp-scratchpad--regenerate-build-files))
-      (message "[cpp-scratchpad] Build system versions ok."))))
+  nil)
 
 (defun cpp-scratchpad--check-tool-versions ()
   "Check if current's build system version changed."
@@ -153,15 +147,16 @@ version. Regenerating files...")))))
 
 (defun cpp-scratchpad--regenerate-build-files ()
   "Regenerate files used to build a scratchpad and tool-versions file."
-  (delete-directory (concat cpp-scratchpad-template-path "/builddir") t)
+  (assert cpp-scratchpad-current-path)
+  (delete-directory (concat cpp-scratchpad-current-path "/builddir") t)
   ;; call the build system to create builddir
   (call-process "/bin/sh" nil nil nil "-c"
 		(format "cd %s && %s"
-			cpp-scratchpad-template-path
+			cpp-scratchpad-current-path
 			(cpp-scratchpad--get-tool-prop
 			 cpp-scratchpad-build-system :builddir-gen-command)))
   (make-symbolic-link "builddir/compile_commands.json"
-		      (concat cpp-scratchpad-template-path
+		      (concat cpp-scratchpad-current-path
 			      "/compile_commands.json")
 		      t))
 
@@ -175,8 +170,8 @@ Meson has priority but it can be redefined by rearranging
 `cpp-scratchpad-build-system-list'."
   (interactive "P")
   ;; TODO: check if in cpp-scratchpad-mode, if not, leave
-  (unless (cpp-scratchpad--build-system-matches-files-p)
-    (error "Build system changed. Please, create new scratchpad."))
+  ;; (unless (cpp-scratchpad--build-system-matches-files-p)
+  ;;   (error "Build system changed. Please, create new scratchpad."))
   (when (buffer-live-p cpp-scratchpad-compilation-buffer)
     (kill-buffer cpp-scratchpad-compilation-buffer))
   (setq-local cpp-scratchpad-compilation-buffer
@@ -249,9 +244,9 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 	   (concat (temporary-file-directory)
 		   (string-trim (shell-command-to-string
 				 "mktemp -du emacs-cpp-scratch-XXX")))))
-      ;; check if build system changed and regenerate files if so
-      (unless (cpp-scratchpad--build-system-matches-files-p)
-	(cpp-scratchpad--regenerate-build-files))
+      ;; ;; check if build system changed and regenerate files if so
+      ;; (unless (cpp-scratchpad--build-system-matches-files-p)
+      ;; 	(cpp-scratchpad--regenerate-build-files))
       (copy-directory cpp-scratchpad-template-path
 		      current-path)
       (find-file-other-window (concat current-path
@@ -261,6 +256,7 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
       (search-forward "{\n")
       (c-indent-line)
       (setq-local cpp-scratchpad-current-path current-path)
+      (cpp-scratchpad--regenerate-build-files)
       (cpp-scratchpad-mode 1))))
 
 (defun cpp-scratchpad-exit ()
