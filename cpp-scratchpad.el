@@ -39,6 +39,9 @@
   "A key map for `cpp-scratchpad-mode'.")
 
 ;; TODO: Add usage documentation inside this minor mode doc.
+;; TODO: Remove version shenanigans
+;; TODO: Install template dir in a correct place:
+;;       (expand-file-name "cpp-scratchpad-template" user-emacs-directory)
 (define-minor-mode
   cpp-scratchpad-mode
   "A minor mode used inside of cpp-scratchpad buffer. It's not designed to be
