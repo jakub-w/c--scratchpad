@@ -90,6 +90,8 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 Car of every element is an executable name of the build system (without
 the path part). Cdr is a property list with the rest of information.
 
+:builddir-gen-command - Command to generate the build directory.
+
 :compile-command - Command to call after the build system has prepared all
                    necessary files.
 
