@@ -82,7 +82,8 @@ binary files."
   :group 'cpp-scratchpad)
 
 (defcustom cpp-scratchpad-template-path
-  (concat user-emacs-directory "cpp-scratch-template/")
+  (concat (file-name-directory (locate-library "cpp-scratchpad"))
+	  "cpp-scratch-template/")
   "Path to a scratchpad template directory."
   :type '(directory)
   :group 'cpp-scratchpad)
