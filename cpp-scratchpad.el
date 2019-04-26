@@ -60,11 +60,22 @@ The following keys are available in `cpp-scratchpad-mode':
     (set-buffer-modified-p nil))
   t)
 (add-hook 'kill-buffer-query-functions 'cpp-scratchpad-kill-buffer-function)
+(defcustom cpp-scratchpad-scratch-dir
+  (concat (temporary-file-directory) "cpp-scratchpad/")
+  "Directory where the files for a scratch will be created.
 
-(defvar cpp-scratchpad-template-path "~/.emacs.d/cpp-scratch-template"
-  "Path to a scratchpad template directory.")
+The directory should be in a place that allows the execution of
+binary files."
+  :type '(directory)
+  :group 'cpp-scratchpad)
 
-(defvar cpp-scratchpad-build-system-list
+(defcustom cpp-scratchpad-template-path
+  (concat user-emacs-directory "cpp-scratch-template/")
+  "Path to a scratchpad template directory."
+  :type '(directory)
+  :group 'cpp-scratchpad)
+
+(defcustom cpp-scratchpad-build-system-list
   '(("meson"
 	   :builddir-gen-command "meson builddir"
 	   :compile-command "cd builddir && ninja"
@@ -83,7 +94,9 @@ the path part). Cdr is a property list with the rest of information.
                    necessary files.
 
 :signature-file - Name of the file in build directory that is unique to the
-                  build system.")
+                  build system."
+  :type '(alist :key-type string :value-type (plist :value-type string))
+  :group 'cpp-scratchpad)
 
 (defcustom cpp-scratchpad-build-system
   (seq-some (lambda (tool)
