@@ -133,7 +133,7 @@ changed and update the template if necessary."
   nil)
 
 (defun cpp-scratchpad--regenerate-build-files ()
-  "Regenerate files used to build a scratchpad and tool-versions file."
+  "Regenerate the files used to build a scratchpad."
   (assert cpp-scratchpad-current-path)
   (delete-directory (concat cpp-scratchpad-current-path "/builddir") t)
   ;; call the build system to create builddir
