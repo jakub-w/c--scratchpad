@@ -164,9 +164,12 @@ Meson has priority but it can be redefined by rearranging
   (when (buffer-live-p cpp-scratchpad-compilation-buffer)
     (kill-buffer cpp-scratchpad-compilation-buffer))
   (setq-local cpp-scratchpad-compilation-buffer
-	      (get-buffer-create (concat
-				  (string-trim-right (buffer-name) "*")
-				  "-result*")))
+	      (get-buffer-create
+	       (save-match-data
+		 (string-match "\\*\\(<[[:digit:]]+>\\)?$" (buffer-name))
+		 (concat (replace-match "" nil nil (buffer-name))
+			 "-result"
+			 (match-string 0 (buffer-name))))))
   (save-buffer)
   ;; don't run if dont-run set or if didn't compile for some reason
   (if (and (not dont-run)
@@ -209,7 +212,6 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
 ;;       to just create symlinks to all needed files and directories.
-;; TODO: number the scratchpads so that you can have several open at once
 (defun cpp-scratchpad-new ()
   "Create a new, clean C++ scratchpad and pop to it."
   (interactive)
@@ -227,11 +229,11 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 		      current-path)
       (find-file-other-window (concat current-path
 				      "/main.cpp"))
-      (rename-buffer "*cpp-scratchpad*")
       (search-forward-regexp "main(.*)")
       (search-forward "{\n")
+      (rename-buffer (generate-new-buffer-name "*cpp-scratchpad*"))
       (c-indent-line)
-      (setq-local cpp-scratchpad-current-path current-path)
+      (setq-local cpp-scratchpad-current-path scratch-path)
       (cpp-scratchpad--regenerate-build-files)
       (cpp-scratchpad-mode 1))))
 
