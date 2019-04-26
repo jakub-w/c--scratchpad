@@ -155,11 +155,12 @@ With a prefix argument \\[universal-argument], just compile without executing.
 Meson has priority but it can be redefined by rearranging
 `cpp-scratchpad-build-system-list'."
   (interactive "P")
-  ;; TODO: check if in cpp-scratchpad-mode, if not, leave
   ;; TODO: fix cpp-scratchpad--build-system-matches-files-p function
   ;;       to work in current dir, not a template dir
   ;; (unless (cpp-scratchpad--build-system-matches-files-p)
   ;;   (error "Build system changed. Please, create new scratchpad."))
+  (unless cpp-scratchpad-mode
+    (user-error "[cpp-scratchpad] Not in the scratchpad."))
   (when (buffer-live-p cpp-scratchpad-compilation-buffer)
     (kill-buffer cpp-scratchpad-compilation-buffer))
   (setq-local cpp-scratchpad-compilation-buffer
