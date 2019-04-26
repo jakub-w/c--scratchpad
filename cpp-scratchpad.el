@@ -115,12 +115,12 @@ This variable is global and shouldn't be used as buffer-local."
   :group 'cpp-scratchpad)
 
 (defvar cpp-scratchpad-current-path nil
-  "Path to current temporary scratchpad directory.
-
-This variable is set locally in scratchpad buffers.")
+  "Path to current temporary scratchpad directory.")
+(make-variable-buffer-local 'cpp-scratchpad-current-path)
 
 (defvar cpp-scratchpad-compilation-buffer nil
   "Buffer used as an output to compilation current scratchpad.")
+(make-variable-buffer-local 'cpp-scratchpad-compilation-buffer)
 (defun cpp-scratchpad--get-tool-prop (tool property)
   (plist-get (cdr (assoc tool cpp-scratchpad-build-system-list)) property))
 
