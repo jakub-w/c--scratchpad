@@ -65,18 +65,19 @@ The following keys are available in `cpp-scratchpad-mode':
   "Path to a scratchpad template directory.")
 
 (defvar cpp-scratchpad-build-system-list
-  '((:name "meson"
+  '(("meson"
 	   :builddir-gen-command "meson builddir"
 	   :compile-command "cd builddir && ninja"
 	   :signature-file "ninja.build")
-    (:name "cmake"
-	   :builddir-gen-command "mkdir builddir && cd builddir && \
+    ("cmake"
+           :builddir-gen-command "mkdir builddir && cd builddir && \
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 	   :compile-command "cd builddir && make"
 	   :signature-file "CMakeCache.txt"))
   "List containing build system information.
 
-:name - Name of a build system.
+Car of every element is an executable name of the build system (without
+the path part). Cdr is a property list with the rest of information.
 
 :compile-command - Command to call after the build system has prepared all
                    necessary files.
@@ -84,25 +85,19 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 :signature-file - Name of the file in build directory that is unique to the
                   build system.")
 
-(defun cpp-scratchpad--get-tool-prop (tool property)
-  "Get PROPERTY of TOOL from `cpp-scratchpad-build-system-list'."
-  (loop for tool-props in cpp-scratchpad-build-system-list
-	when (string-equal tool (plist-get tool-props :name))
-	return (plist-get tool-props property)))
-
-(defun cpp-scratchpad--tool-exists-p (name)
-  (eq 0 (call-process "/bin/sh" nil nil nil "-c" (concat "which " name))))
-
-(defvar cpp-scratchpad-build-system
-  (loop for tool-props in cpp-scratchpad-build-system-list
-      for tool = (plist-get tool-props :name)
-      if (cpp-scratchpad--tool-exists-p tool) return tool)
+(defcustom cpp-scratchpad-build-system
+  (seq-some (lambda (tool)
+	      (when (executable-find (car tool))
+		(car tool)))
+	    cpp-scratchpad-build-system-list)
   "Build system chosen to build a scratchpad.
 
-It defaults to whatever tool listed in `cpp-scratchpad-build-system-list' is
-found on a system. Priority can be changed by modifying said list.
+It defaults to whatever tool listed in `cpp-scratchpad-build-system-list'
+is found on a system. Priority can be changed by modifying said list.
 
-This variable is global and shouldn't be used as buffer-local.")
+This variable is global and shouldn't be used as buffer-local."
+  :type '(string)
+  :group 'cpp-scratchpad)
 
 (defvar cpp-scratchpad-current-path nil
   "Path to current temporary scratchpad directory.
@@ -111,6 +106,8 @@ This variable is set locally in scratchpad buffers.")
 
 (defvar cpp-scratchpad-compilation-buffer nil
   "Buffer used as an output to compilation current scratchpad.")
+(defun cpp-scratchpad--get-tool-prop (tool property)
+  (plist-get (cdr (assoc tool cpp-scratchpad-build-system-list)) property))
 
 (defun cpp-scratchpad-template-setup ()
   "Set up template directory.
