@@ -218,17 +218,19 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
   (catch 'err
     (unless (file-exists-p cpp-scratchpad-template-path)
       (throw 'err "[cpp-scratchpad] Scratchpad template does not exist!"))
-    (let ((current-path
-	   (concat (temporary-file-directory)
-		   (string-trim (shell-command-to-string
-				 "mktemp -du emacs-cpp-scratch-XXX")))))
+    (let ((scratch-path
+	   (progn
+	     (unless (file-exists-p cpp-scratchpad-scratch-dir)
+	       (make-directory cpp-scratchpad-scratch-dir t))
+	     (concat (make-temp-file cpp-scratchpad-scratch-dir t) "/"))))
       ;; ;; check if build system changed and regenerate files if so
       ;; (unless (cpp-scratchpad--build-system-matches-files-p)
       ;; 	(cpp-scratchpad--regenerate-build-files))
       (copy-directory cpp-scratchpad-template-path
-		      current-path)
-      (find-file-other-window (concat current-path
-				      "/main.cpp"))
+		      scratch-path
+		      nil nil t)
+      (find-file-other-window (concat scratch-path
+				      "main.cpp"))
       (rename-buffer (generate-new-buffer-name "*cpp-scratchpad*"))
       (unless (search-forward "`" nil t)
 	(error "[cpp-scratchpad] Template's main.cpp file doesn't contain the marker for point position"))
