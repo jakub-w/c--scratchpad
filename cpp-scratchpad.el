@@ -114,6 +114,12 @@ This variable is global and shouldn't be used as buffer-local."
 (defvar cpp-scratchpad-compilation-buffer nil
   "Buffer used as an output to compilation current scratchpad.")
 (make-variable-buffer-local 'cpp-scratchpad-compilation-buffer)
+
+(defvar cpp-scratchpad-before-compile-hook nil
+  "List of functions called with no args before compiling cpp-scratchpad
+buffer. Functions are called after killing and recreating the
+compilation buffer, just before the compilation.")
+
 (defvar cpp-scratchpad-before-kill-hook nil
   "List of functions called with no args before killing cpp-scratchpad
 buffer.")
@@ -178,6 +184,7 @@ Meson has priority but it can be redefined by rearranging
 			 "-result"
 			 (match-string 0 (buffer-name))))))
   (save-buffer)
+  (run-hooks cpp-scratchpad-before-compile-hook)
   ;; don't run if dont-run set or if didn't compile for some reason
   (if (and (not dont-run)
 	   (cpp-scratchpad--build
