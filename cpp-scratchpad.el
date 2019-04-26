@@ -39,7 +39,6 @@
   "A key map for `cpp-scratchpad-mode'.")
 
 ;; TODO: Add usage documentation inside this minor mode doc.
-;; TODO: Remove version shenanigans
 ;; TODO: Install template dir in a correct place:
 ;;       (expand-file-name "cpp-scratchpad-template" user-emacs-directory)
 (define-minor-mode
@@ -69,13 +68,11 @@ The following keys are available in `cpp-scratchpad-mode':
   '((:name "meson"
 	   :builddir-gen-command "meson builddir"
 	   :compile-command "cd builddir && ninja"
-	   :get-version-fun cpp-scratchpad--meson-get-version
 	   :signature-file "ninja.build")
     (:name "cmake"
 	   :builddir-gen-command "mkdir builddir && cd builddir && \
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 	   :compile-command "cd builddir && make"
-	   :get-version-fun cpp-scratchpad--cmake-get-version
 	   :signature-file "CMakeCache.txt"))
   "List containing build system information.
 
@@ -83,9 +80,6 @@ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=YES .."
 
 :compile-command - Command to call after the build system has prepared all
                    necessary files.
-
-:get-version-fun - Function used to determine which version of build system is
-                   present on a system.
 
 :signature-file - Name of the file in build directory that is unique to the
                   build system.")
@@ -125,33 +119,6 @@ Check if there is no template set up or if build systems or compilers have
 changed and update the template if necessary."
   (interactive)
   nil)
-
-(defun cpp-scratchpad--check-tool-versions ()
-  "Check if current's build system version changed."
-  (catch 'regenerate
-    (let ((tool-versions (concat cpp-scratchpad-template-path
-				 "/tool-versions")))
-      (if (not (file-exists-p tool-versions))
-	  (throw 'regenerate "[cpp-scratchpad] tool-version file doesn't \
-exist. Generating new files...")
-	(with-temp-buffer
-	  (insert-file-contents tool-versions)
-	  (if (search-forward cpp-scratchpad-build-system nil t)
-	      (progn
-		(forward-char)
-		(let ((version (buffer-substring-no-properties
-				(point) (line-end-position))))
-		  (message version)
-		  (unless (string-equal
-			   version
-			   (funcall (cpp-scratchpad--get-tool-prop
-				     cpp-scratchpad-build-system
-				     :get-version-fun)))
-		    (throw 'regenerate "[cpp-scratchpad] Build system \
-version changed. Regenerating files..."))))
-	    (throw 'regenerate "[cpp-scratchpad] Build system doesn't have a \
-version. Regenerating files...")))))
-    nil))
 
 (defun cpp-scratchpad--regenerate-build-files ()
   "Regenerate files used to build a scratchpad and tool-versions file."
@@ -202,16 +169,6 @@ Meson has priority but it can be redefined by rearranging
       (compilation-mode)))
   (pop-to-buffer cpp-scratchpad-compilation-buffer))
 
-(defun cpp-scratchpad--generic-get-version (tool)
-  (let ((string (shell-command-to-string (concat tool " --version"))))
-    (string-match "[[:digit:]]+\\.[[:digit:]]+\\.[[:digit:]]+" string)
-    (match-string 0 string)))
-
-;; NOTE: This evaluates slowly so it will hang emacs for a moment.
-;;        For me it's about 0.21s compared to cmake's 0.012.
-(defun cpp-scratchpad--meson-get-version ()
-  (cpp-scratchpad--generic-get-version "meson"))
-
 (defun cpp-scratchpad--build (&optional build-system)
   "Call a BUILD-SYSTEM to compile current scratchpad.
 
@@ -228,9 +185,6 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
   						    :compile-command))))
       t
     nil))
-
-(defun cpp-scratchpad--cmake-get-version ()
-  (cpp-scratchpad--generic-get-version "cmake"))
 
 (defun cpp-scratchpad--build-system-matches-files-p ()
   "Check if current build system matches files in template directory."
