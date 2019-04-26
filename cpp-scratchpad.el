@@ -137,7 +137,7 @@ changed and update the template if necessary."
   (assert cpp-scratchpad-current-path)
   (delete-directory (concat cpp-scratchpad-current-path "/builddir") t)
   ;; call the build system to create builddir
-  (call-process "/bin/sh" nil nil nil "-c"
+  (call-process shell-file-name nil nil nil shell-command-switch
 		(format "cd %s && %s"
 			cpp-scratchpad-current-path
 			(cpp-scratchpad--get-tool-prop
@@ -190,8 +190,8 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
   (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
   (unless build-system (setq build-system cpp-scratchpad-build-system))
   (if (eq 0 (call-process
-	     "/bin/sh" nil cpp-scratchpad-compilation-buffer nil
-  	     "-c"
+	     shell-file-name nil cpp-scratchpad-compilation-buffer nil
+  	     shell-command-switch
   	     (concat "cd " cpp-scratchpad-current-path " && "
   		     (cpp-scratchpad--get-tool-prop build-system
   						    :compile-command))))
