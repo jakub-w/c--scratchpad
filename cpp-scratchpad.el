@@ -229,9 +229,10 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 		      current-path)
       (find-file-other-window (concat current-path
 				      "/main.cpp"))
-      (search-forward-regexp "main(.*)")
-      (search-forward "{\n")
       (rename-buffer (generate-new-buffer-name "*cpp-scratchpad*"))
+      (unless (search-forward "`" nil t)
+	(error "[cpp-scratchpad] Template's main.cpp file doesn't contain the marker for point position"))
+      (delete-char -1)
       (c-indent-line)
       (setq-local cpp-scratchpad-current-path scratch-path)
       (cpp-scratchpad--regenerate-build-files)
