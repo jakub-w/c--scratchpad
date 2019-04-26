@@ -192,13 +192,13 @@ If BUILD-SYSTEM is not specified, use `cpp-scratchpad-build-system'.
 
 Uses buffer-local `cpp-scratchpad-compilation-buffer'."
   (assert (buffer-live-p cpp-scratchpad-compilation-buffer))
-  (unless build-system (setq build-system cpp-scratchpad-build-system))
   (if (eq 0 (call-process
 	     shell-file-name nil cpp-scratchpad-compilation-buffer nil
   	     shell-command-switch
   	     (concat "cd " cpp-scratchpad-current-path " && "
-  		     (cpp-scratchpad--get-tool-prop build-system
-  						    :compile-command))))
+  		     (cpp-scratchpad--get-tool-prop
+		      (or build-system cpp-scratchpad-build-system)
+		      :compile-command))))
       t
     nil))
 
