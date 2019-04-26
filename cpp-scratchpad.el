@@ -212,6 +212,7 @@ Uses buffer-local `cpp-scratchpad-compilation-buffer'."
 ;; Maybe we should put the directory inside /tmp/emacs<uid>/
 ;; NOTE: Copying template directory may be unnecessary. It could be possible
 ;;       to just create symlinks to all needed files and directories.
+;;;###autoload
 (defun cpp-scratchpad-new ()
   "Create a new, clean C++ scratchpad and pop to it."
   (interactive)
