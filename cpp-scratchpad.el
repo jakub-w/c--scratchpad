@@ -53,13 +53,6 @@ The following keys are available in `cpp-scratchpad-mode':
   " cpp-s"
   'cpp-scratchpad-mode-map)
 
-;; TODO: kill also a buffer with compilation result
-(defun cpp-scratchpad-kill-buffer-function ()
-  (when (eq t cpp-scratchpad-mode)
-    (delete-directory cpp-scratchpad-current-path t)
-    (set-buffer-modified-p nil))
-  t)
-(add-hook 'kill-buffer-query-functions 'cpp-scratchpad-kill-buffer-function)
 (defcustom cpp-scratchpad-scratch-dir
   (concat (temporary-file-directory) "cpp-scratchpad/")
   "Directory where the files for a scratch will be created.
@@ -121,6 +114,20 @@ This variable is global and shouldn't be used as buffer-local."
 (defvar cpp-scratchpad-compilation-buffer nil
   "Buffer used as an output to compilation current scratchpad.")
 (make-variable-buffer-local 'cpp-scratchpad-compilation-buffer)
+(defvar cpp-scratchpad-before-kill-hook nil
+  "List of functions called with no args before killing cpp-scratchpad
+buffer.")
+
+(defun cpp-scratchpad-kill-buffer-function ()
+  (when cpp-scratchpad-mode
+    (run-hooks cpp-scratchpad-before-kill-hook)
+    (when (buffer-live-p cpp-scratchpad-compilation-buffer)
+      (kill-buffer cpp-scratchpad-compilation-buffer))
+    (delete-directory cpp-scratchpad-current-path t)
+    (set-buffer-modified-p nil))
+  t)
+(add-hook 'kill-buffer-query-functions 'cpp-scratchpad-kill-buffer-function)
+
 (defun cpp-scratchpad--get-tool-prop (tool property)
   (plist-get (cdr (assoc tool cpp-scratchpad-build-system-list)) property))
 
