@@ -28,6 +28,21 @@
 
 ;; The `cpp-scratchpad' package provides simple and quick method to open
 ;; a scratchpad for testing code or prototyping in C++.
+;;
+;; The simplest way to use it is to add the package to `load-path' or
+;; putting (require 'cpp-scratchpad) in an init file.
+;; Then you can call `cpp-scratchpad-new' to create new, empty scratchpad.
+;;
+;; To compile the code and run it, press C-c C-c
+;; To compile without running: C-u C-c C-c
+;;
+;; To close the scratchpad just kill the buffer. Its compilation buffer will
+;; be killed alongside.
+;;
+;; The template for a scratchpad is stored in the directory specified by
+;; `cpp-scratchpad-template-path' variable.
+;; The main.cpp file should include an indicator where to put a point after
+;; creating a new scratchpad. The indicator is a char: '`' (backquote).
 
 ;;; Code:
 
