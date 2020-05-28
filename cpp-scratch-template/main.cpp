@@ -1,5 +1,9 @@
 #include <iostream>
 
+#include "utils.h"
+
+using namespace cpps;
+
 int main() {
   `
 
